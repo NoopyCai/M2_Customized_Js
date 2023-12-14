@@ -52,7 +52,7 @@
   <a href="/blog/christmas-5item-diy.html"
     ><img
       style="display: block; width: 100%"
-      src="/media/wysiwyg/home_page/2023_12M/2023_12M_Christmas_Purchase.jpg"
+      src="{{media url=wysiwyg/home_page/2023_12M/2023_12M_Christmas_Purchase.jpg}}"
       alt="第三屆聖誕佈置大賽"
       class="select-promotion"
       data-ga-category="MKT-furniture"
@@ -62,7 +62,17 @@
 </div>
 
 <script>
-  document
-    .querySelector(".page-main .page-title-wrapper")
-    .before(document.querySelector(".banner-container"));
+  (function () {
+    const currentUrl = window.location.pathname;
+    if (currentUrl.includes("/checkout/onepage/success")) {
+      insetBanner();
+    }
+    function insetBanner() {
+      console.log("insertBanner function");
+      document
+        .querySelector(".page-main .page-title-wrapper")
+        .before(document.querySelector(".banner-container"));
+    }
+    console.log(document.querySelector(".banner-container"));
+  })();
 </script>
