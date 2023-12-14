@@ -1,0 +1,19 @@
+<!--Category Page-->
+
+<script>
+  //分類頁漏斗
+  function conditionOptionFunnel() {
+    var container = document.querySelector(
+      ".page-main .sidebar-main .filter-title strong"
+    );
+    var iconContainer = document.createElement("span");
+    iconContainer.textContent = "";
+    container.appendChild(iconContainer);
+    var iconDiv = document.querySelector(
+      ".page-main .sidebar-main .filter-title strong>span"
+    );
+    iconDiv.innerHTML =
+      '    <i class="fa fa-filter" style="font-size:16px"></i>';
+  }
+  conditionOptionFunnel();
+</script>

@@ -1,0 +1,431 @@
+<!--Checkout Page-->
+
+<style>
+  /* 隱藏結帳紅色訊息 & 地址公司 */
+  .checkout-index-index .message.message-error div,
+  .checkout-index-index .message.message-error {
+    display: none !important;
+  }
+  .fieldset.address div[name$=".company"] {
+    display: none;
+  }
+</style>
+<script defer>
+  (function () {
+    const promise = waitForElm("body >.loading-mask", 30000);
+
+    promise
+      .then((elm) => {
+        console.log("取得target", elm);
+        checkTotalInfo();
+      })
+      .catch((err) => {
+        console.error("Eroor:", err);
+      });
+  })();
+
+  function executeAfterTotalLoaded() {
+    bonusText();
+    autoAreaInput();
+    checkInput();
+    displayNecessaryError();
+    fixCityDisappear();
+    reOrderListOfCity();
+    outsideTWremind();
+    checkInvoice();
+  }
+
+  //監聽元素出現
+  function waitForElm(selector, timeout = 30000, doc = document) {
+    const scopeDoc = doc;
+    let observer = null;
+    let outRejectFn = null;
+
+    const promise = new Promise((resolve, reject) => {
+      const el = scopeDoc.querySelector(selector);
+      if (el) {
+        return resolve(el);
+      }
+
+      outRejectFn = reject;
+
+      observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          const targetEl = (
+            mutation.target.parentElement ?? scopeDoc
+          )?.querySelector(selector);
+          if (targetEl) {
+            outRejectFn = null;
+            resolve(targetEl);
+            observer?.disconnect(); //停止監聽
+            return;
+          }
+        });
+      });
+
+      observer.observe(scopeDoc, {
+        childList: true,
+        subtree: true,
+      });
+
+      setTimeout(() => {
+        outRejectFn = null;
+        reject("超時");
+        observer?.disconnect();
+      }, timeout);
+    });
+
+    return promise;
+  }
+
+  //監聽結帳資訊完全載入
+  function checkTotalInfo() {
+    let mutationObserver;
+    const target = document.querySelector("body >.loading-mask");
+
+    mutationObserver = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        console.log(mutation.attributeName);
+        if (mutation.attributeName === "style") {
+          mutationObserver.disconnect(); //停止監聽
+          executeAfterTotalLoaded();
+          console.log("結帳資訊載入完成");
+        }
+      });
+    });
+
+    // Starts listening for changes in the root HTML element of the page.
+
+    console.log(target);
+    mutationObserver.observe(target, {
+      attributes: true,
+      characterData: false,
+      childList: false,
+      subtree: false,
+      attributeOldValue: true,
+      characterDataOldValue: false,
+    });
+  }
+
+  //監聽發票選項出現
+  function checkInvoice() {
+    const emailSameFieldLabel = document.querySelector(
+      '.fieldset.address div[name$=".einvoice_email_same_as_account"] label'
+    );
+
+    const invoiceObserver = (entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          emailDisplay();
+          observer.unobserve(entry.target); //停止監聽
+        }
+      });
+    };
+
+    const options = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.5,
+    };
+
+    const observer = new IntersectionObserver(invoiceObserver, options);
+
+    observer.observe(emailSameFieldLabel);
+  }
+
+  //商品調漲 - 結帳頁
+  function bonusText() {
+    var container = document.querySelector(
+      ".page-wrapper .page-main #checkout .amcheckout-main-container .amcheckout-column .-summary"
+    );
+    var paragraph = document.createElement("P");
+    var paragraph_2 = document.createElement("P");
+    paragraph.textContent = "";
+    paragraph_2.textContent = "今年最後一次 大檔優惠\r\n";
+    paragraph_2.textContent += "現在買 最划算";
+    paragraph.style.cssText =
+      "color: #ae0000; font-size:1.4rem; letter-spacing:1px; text-align:   center; width: 80%;font-weight: 600; margin: 20px auto 0 ;white-space: pre;";
+    paragraph_2.style.cssText =
+      "color: #ae0000; font-size:1.4rem; letter-spacing:1px;text-align:   center;width: 80%;font-weight: 600; margin: 0 auto 20px ;white-space: pre;";
+    container.appendChild(paragraph);
+    container.appendChild(paragraph_2);
+  }
+  bonusText();
+
+  //自帶鄉鎮
+  function autoAreaInput() {
+    var regionSelector =
+      '#co-shipping-form select[name*="custom_attributes[city_id]"]';
+    console.log("自帶鄉鎮", jQuery(regionSelector).val());
+    if (jQuery(regionSelector).val() == "") {
+      jQuery(regionSelector)
+        .find("option:eq(1)")
+        .attr("selected", "selected")
+        .trigger("change");
+    }
+  }
+  autoAreaInput();
+
+  //結帳頁輸入檢查
+  function checkInput() {
+    // 地址手機號碼
+    var phoneInput = document.querySelector(
+      '.fieldset.address div[name$=".telephone"] input'
+    );
+    phoneInput.setAttribute("placeholder", "0911222333");
+    phoneInput.setAttribute("maxlength", "10");
+
+    // 錯誤訊息
+    var errorMsg = document.createElement("div");
+    errorMsg.classList.add("field-error");
+
+    //// 錯誤訊息顯示
+    function showErrorMsg(e, alertText) {
+      e.target.style["border"] = "1px solid #ed8380";
+      errorMsg.style["display"] = "block";
+      errorMsg.innerText = alertText;
+      e.target.after(errorMsg);
+    }
+    //// 錯誤訊息消失
+    function hideErrorMsg(e) {
+      e.target.style["border"] = "";
+      errorMsg.style["display"] = "none";
+    }
+
+    // 備用連絡電話
+    var phone2Inputfield = document.querySelector(
+      'div[name$=".dev_phone02"] input'
+    );
+    phone2Inputfield.addEventListener("keyup", function () {
+      event.stopPropagation();
+      checkLength(event, 30);
+    });
+
+    function checkLength(e, maxlength) {
+      if (e.target.value.length > maxlength) {
+        var phone2alertText = "您輸入的字數已達上限 " + maxlength + " 字！";
+        e.target.value = e.target.value.substring(0, maxlength);
+        showErrorMsg(e, phone2alertText);
+        setTimeout(function () {
+          hideErrorMsg(e);
+        }, 2000);
+      }
+    }
+
+    // 發票載具
+    // 轉成大寫
+    var carrierIDfield = document.querySelector('[name="gui_carrierid1"]');
+    //carrierIDfield.addEventListener('keyup', turnToUpperCase);
+
+    //carrierIDfield.addEventListener('change', turnToUpperCase);
+
+    carrierIDfield.addEventListener("input", turnToUpperCase);
+
+    function turnToUpperCase(e) {
+      e.target.value = e.target.value.toUpperCase();
+      var event = new Event("change");
+      e.target.dispatchEvent(event);
+    }
+
+    //檢查
+    carrierIDfield.addEventListener("focusout", function (e) {
+      var carrierType = isPhoneOrPeopleCarrier();
+      checkFormat(e, carrierType);
+    });
+
+    function isPhoneOrPeopleCarrier() {
+      var eInvoiceField = document.querySelector('[name="e_invoice"]').value;
+      var carrierField = document.querySelector('[name="pe_select"]').value;
+      if (eInvoiceField === "10" && carrierField === "174") {
+        //手機載具
+        return "phone";
+      } else if (eInvoiceField === "10" && carrierField === "34") {
+        //自然人憑證
+        return "citizen";
+      } else {
+        return false;
+      }
+    }
+
+    function checkFormat(e, carrierType) {
+      var PhonePatt = /^\/[0-9A-Z.+-]{7}$/;
+      var CitizenPatt = /^[A-Z]{2}[0-9]{14}$/;
+      var pattern, alertText;
+      if (carrierType === "phone") {
+        pattern = PhonePatt;
+        alertText =
+          "手機載具條碼不符合格式\n" +
+          "第一碼需為「/」，後七碼則由數字「0-9」、大寫英文「A-Z」與特殊符號「.」「-」「+」組成";
+      } else if (carrierType === "citizen") {
+        pattern = CitizenPatt;
+        alertText =
+          "自然人憑證碼不符合格式\n" +
+          "前兩碼為大寫英文「A-Z」，後14碼為數字「0-9」";
+      }
+      if (pattern && !pattern.test(e.target.value)) {
+        showErrorMsg(e, alertText);
+      } else {
+        hideErrorMsg(e);
+      }
+    }
+  }
+
+  //結帳頁離島提示
+  function outsideTWremind() {
+    require(["jquery", "Magento_Ui/js/modal/alert"], function ($, alert) {
+      //var $ = jQuery;
+      var country_num_outlying = [323, 322, 310];
+      console.log($("[name='custom_attributes[city_id]']"));
+      $("[name='custom_attributes[city_id]']").change(function () {
+        var value = $(this).val();
+
+        detect(value);
+      });
+
+      function showalert() {
+        alert({
+          title: "提醒您～目前勾選的地址屬『離島』地區",
+          content: $.mage.__(
+            "(1)枕頭/棉被/寢具類商品，將逕行配送至指定地址，請務必填寫正確；且配送日程須配合聯運與船班時間。 <br><br>(2)床墊/家具/沙發類商品，物流僅配送至本島港口，將有客服與您電話聯繫確認。"
+          ),
+          modalClass: "alert",
+          actions: {
+            always: function () {},
+          },
+        });
+      }
+
+      function detect(num) {
+        for (var i = 0; i < country_num_outlying.length; i++) {
+          if (num == country_num_outlying[i]) {
+            showalert();
+          }
+        }
+      }
+    });
+  }
+
+  //結帳顯示必要錯誤訊息
+  function displayNecessaryError() {
+    var $paymentContent = jQuery(".payment-method-content");
+    $paymentContent.bind("DOMNodeInserted", function (e) {
+      var $errorMsg = jQuery(".payment-method-content").find(
+        "div[data-ui-id='checkout-cart-validationmessages-message-error']"
+      );
+      var $errorMsgTxt = $errorMsg.text();
+      var $re = new RegExp("is required");
+      if ($re.test($errorMsgTxt)) {
+        var $reStreet = new RegExp('"street"');
+        if ($reStreet.test($errorMsgTxt)) {
+          alert(
+            '尚未選擇地址，或請輸入新地址。"street" is required. Enter and try again. "telephone" is required. Enter and try again.'
+          );
+          var $target_top = jQuery("#shipping").offset().top;
+          var $body = window.opera
+            ? document.compatMode == "CSS1Compat"
+              ? jQuery("html")
+              : jQuery("body")
+            : jQuery("html,body");
+          $body.scrollTop($target_top);
+        } else {
+          alert($errorMsgTxt);
+        }
+        $errorMsg.html("");
+      }
+    });
+  }
+
+  //處理結帳頁縣市消失問題
+  function fixCityDisappear() {
+    var storageData = JSON.parse(localStorage.getItem("mage-cache-storage"));
+    var directoryData = JSON.parse(
+      '{"name":"台灣","regions":{"1101":{"code":"M63","name":"臺北市"},"1102":{"code":"M65","name":"新北市"},"1103":{"code":"M10","name":"基隆市"},"1112":{"code":"M68","name":"桃園市"},"1113":{"code":"M18","name":"新竹市"},"1114":{"code":"M04","name":"新竹縣"},"1115":{"code":"M05","name":"苗栗縣"},"1116":{"code":"M66","name":"臺中市"},"1117":{"code":"M07","name":"彰化縣"},"1118":{"code":"M19","name":"雲林縣"},"1119":{"code":"M20","name":"嘉義市"},"1120":{"code":"M11","name":"嘉義縣"},"1121":{"code":"M67","name":"臺南市"},"1122":{"code":"M64","name":"高雄市"},"1123":{"code":"M13","name":"屏東縣"},"1124":{"code":"M02","name":"宜蘭縣"},"1125":{"code":"M14","name":"臺東縣"},"1126":{"code":"M70","name":"花蓮縣"},"1127":{"code":"M08","name":"南投縣"}}}'
+    );
+
+    if (typeof storageData["directory-data"] == "undefined") {
+      storageData["directory-data"] = {};
+      storageData["directory-data"]["data_id"] =
+        storageData["customer"]["data_id"];
+      storageData["directory-data"]["TW"] = directoryData;
+
+      localStorage.setItem("mage-cache-storage", JSON.stringify(storageData));
+    }
+
+    console.log("localStorage", storageData);
+  }
+
+  //縣市列表重新排序
+  function reOrderListOfCity() {
+    var options = document.querySelectorAll('select[name="region_id"] option');
+    var originRegionId = document.querySelector(
+      'select[name="region_id"]'
+    ).value;
+    var newoptions = Array.apply(null, options);
+
+    var set = new Set();
+    newoptions = newoptions.filter(function (item) {
+      if (!set.has(item.dataset.title) && !set.has(item.innerText)) {
+        set.add(item.innerText);
+        return true;
+      } else {
+        return false;
+      }
+    });
+    newoptions.sort(function (a, b) {
+      if (a.value > b.value) {
+        return 1;
+      } else if (a.value == b.value) {
+        return 0;
+      } else {
+        return -1;
+      }
+    });
+
+    var allSelects = document.querySelectorAll('select[name="region_id"]');
+
+    for (var i = 0; i < allSelects.length; i++) {
+      allSelects[i].innerHTML = "";
+      for (var j = 0; j < newoptions.length; j++) {
+        //console.log(newoptions[j]);
+        allSelects[i].appendChild(newoptions[j].cloneNode(true));
+      }
+      allSelects[i].value = originRegionId;
+    }
+  }
+
+  //會員email顯示
+  function emailDisplay() {
+    const localStorageData = localStorage.getItem("mage-cache-storage");
+    const customerEmail =
+      JSON.parse(localStorageData)?.[
+        "apptrian_facebook_pixel_matching_section"
+      ]["matching_data"]["em"];
+
+    if (customerEmail) {
+      const emailSameFieldLabel = document.querySelector(
+        '.fieldset.address div[name$=".einvoice_email_same_as_account"] label'
+      );
+      const currentEmailElement = document.createElement("p");
+      if (emailValid(customerEmail)) {
+        currentEmailElement.innerText =
+          "您目前的會員帳號信箱：" + customerEmail;
+      } else {
+        currentEmailElement.innerText =
+          "您目前的會員帳號信箱：目前尚無指定Email";
+        document.querySelector('input.radio[value="373"]').click();
+      }
+      emailSameFieldLabel.after(currentEmailElement);
+    }
+
+    function emailValid(em) {
+      var lineLoginPatt = /line-[0-9]+@mrliving\.com\.tw/;
+      var noEmailCusPatt = /.*@mrliving\.co$/;
+
+      if (lineLoginPatt.test(em) || noEmailCusPatt.test(em)) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  }
+</script>

@@ -1,0 +1,58 @@
+<!--產品活動價格文案-->
+<style>
+  .product-info-price .configurable-old-price_without .price:after {
+    content: none;
+  }
+</style>
+
+<script>
+  (function () {
+    //<--產品活動價格文案-->
+    function productActivityCopy() {
+      requirejs(["jquery"], function (jQuery) {
+        $price_label = jQuery(".new-special-price .price-label");
+        if ($price_label.html() == "活動優惠價") {
+          $price_label.html("折扣後價格");
+        }
+
+        $old_price = jQuery(
+          "div.new-price-final_price span.old-price span.price"
+        );
+        $old_price.before('<span style="font-size: 1.1rem">(售價已折) <span>');
+
+        jQuery(".product-info-main .mrl_discount_txt").hide();
+
+        jQuery(".swatch-attribute-selected-option").on(
+          "DOMSubtreeModified",
+          function () {
+            var hasNone = 0;
+            jQuery(".swatch-attribute-selected-option").each(function () {
+              if (jQuery(this).html() == "") hasNone += 1;
+            });
+
+            if (hasNone == 0) {
+              console.log("都有內容");
+              jQuery(".product-info-price .old-price").removeClass(
+                "configurable-old-price"
+              );
+              jQuery(".product-info-price .old-price").addClass(
+                "configurable-old-price_without"
+              );
+            } else {
+              console.log("有一個沒內容");
+              jQuery(".product-info-price .old-price").removeClass(
+                "configurable-old-price_without"
+              );
+              jQuery(".product-info-price .old-price").addClass(
+                "configurable-old-price"
+              );
+            }
+          }
+        );
+
+        console.log("產品活動文案變更");
+      });
+    }
+    productActivityCopy();
+  })();
+</script>

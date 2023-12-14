@@ -1,0 +1,221 @@
+<!--EDM-->
+
+<script>
+  (function () {
+    let currentURL = window.location.pathname;
+    let pageType = document.querySelector(".ga-page")?.value;
+
+    if (
+      currentURL.includes("/checkout/cart") &&
+      currentURL.includes("mrl_type=edm")
+    ) {
+      console.log("autoAddDiscountCode is true");
+      autoAddDiscountCode();
+    }
+
+    if (pageType === "product" && currentURL.includes("mrl_type=edm")) {
+      console.log("autoAddProduc is true");
+      autoAddProduct();
+    }
+
+    //<-- 產品頁 - 自動加入產品-->
+    function autoAddProduct() {
+      var mrl_autoadd_reload =
+        localStorage.getItem("mrl_autoadd_reload") == "NaN"
+          ? 0
+          : parseInt(localStorage.getItem("mrl_autoadd_reload"));
+      var searchParams = new URLSearchParams(window.location.search);
+      var coupon = searchParams.get("mrl_coupon");
+
+      requirejs(["jquery", "mage/cookies"], function ($) {
+        showDialog();
+        autoAddToCart();
+
+        function showDialog() {
+          var _dialog_title = "請稍候......";
+          var _dialog_content =
+            coupon != "" && coupon != null && coupon != "null"
+              ? "商品正在『加入購物車、帶入折扣碼中』"
+              : "商品正在『加入購物車』";
+
+          var css_style =
+            "<style>#autoaddtocard-dialog.dialog-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:center;z-index:9999}#autoaddtocard-dialog .dialog{background-color:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.2);overflow:hidden;width:400px;max-width:100%}#autoaddtocard-dialog .dialog-header{background-color:#f1f1f1;padding:16px;position:relative}#autoaddtocard-dialog .dialog-header h3{margin:0;font-size:1.9rem}#autoaddtocard-dialog .dialog-header .dialog-close{position:absolute;top:50%;right:0;transform:translateY(-50%);color:#fff;cursor:pointer}#autoaddtocard-dialog .dialog-body{padding:16px}.dialog-footer{background-color:#f1f1f1;padding:16px;text-align:right}</style>";
+          var append_div =
+            '<div id="autoaddtocard-dialog" class="dialog-overlay"><div class="dialog dialog-appear"><div class="dialog-header"><h3>' +
+            _dialog_title +
+            '</h3><i class=" dialog-close" onclick="hideDialog()"><img src="https://www.mrliving.com.tw/media/wysiwyg/other/dali_cat.png" width="50"></i></div><div class="dialog-body"><p><span><img src="https://www.mrliving.com.tw/media/wysiwyg/other/loader.gif" width="5%" style="margin-top:10px"></span><span class="dialog-content">' +
+            _dialog_content +
+            "</span></p></div></div></div>";
+
+          $("body").append(css_style + append_div);
+        }
+
+        function autoAddToCart() {
+          var addToCartUrl = $("#product_addtocart_form").attr("action");
+          var itemIdToAdd = $("#product_addtocart_form input[name=item]").val();
+          var newAddToCartUrl = addToCartUrl.replace(
+            /\/\d+\//g,
+            "/" + itemIdToAdd
+          );
+          //var formKey = $('#product_addtocart_form input[name=form_key]').val();
+          //var formKey = $.cookie("form_key");
+          var formKey = $.mage.cookies.get("form_key");
+          var formData = new FormData();
+          formData.append("product", itemIdToAdd);
+          formData.append("selected_configurable_option", "");
+          formData.append("related_product", "");
+          formData.append("form_key", formKey);
+          formData.append("qty", 1);
+
+          console.log(
+            "formKey, addToCartUrl, formData",
+            formKey,
+            newAddToCartUrl,
+            formData
+          );
+
+          var request = $.ajax({
+            url: newAddToCartUrl,
+            method: "POST",
+            processData: false,
+            contentType: false,
+            data: formData,
+          })
+            .done(function (response) {
+              console.log("auto add Success");
+
+              localStorage.setItem(
+                "mrl_autoadd_reload",
+                mrl_autoadd_reload + 1
+              );
+              if (coupon != "" && coupon != null && coupon != "null") {
+                localStorage.setItem("mrl_coupon", coupon);
+              }
+
+              if ($.isArray(response)) {
+                localStorage.setItem("mrl_autoadd_reload", 0);
+                window.location.href = "/checkout/cart/?mrl_type=edm";
+              } else {
+                localStorage.setItem(
+                  "mrl_autoadd_reload",
+                  mrl_autoadd_reload + 1
+                );
+                if (mrl_autoadd_reload == 0) {
+                  location.reload();
+                } else {
+                  $(".dialog-header h3").text("提醒");
+
+                  var _htmlDialog = "";
+                  if (coupon != "" && coupon != null && coupon != "null") {
+                    _htmlDialog +=
+                      "請加入商品，並複製 折扣碼：" +
+                      coupon +
+                      ' 使用 <button onclick="copyCoupon()">複製折扣碼</button>';
+                  } else {
+                    _htmlDialog += "請加入商品";
+                  }
+
+                  _htmlDialog +=
+                    ' <button onclick="hideDialog()">關閉</button>';
+
+                  $(".dialog-content").html(_htmlDialog);
+                }
+              }
+            })
+            .fail(function (jqXHR, textStatus) {
+              console.log(
+                "auto add Couldn't add product to cart. " + textStatus
+              );
+            });
+        }
+      });
+
+      function hideDialog() {
+        var overlay = document.querySelector(
+          "#autoaddtocard-dialog.dialog-overlay"
+        );
+        var dialog = document.querySelector("#autoaddtocard-dialog .dialog");
+
+        dialog.classList.remove("dialog-appear");
+        dialog.classList.add("dialog-disappear");
+        overlay.style.display = "none";
+        dialog.classList.remove("dialog-disappear");
+      }
+
+      function copyCoupon() {
+        var value = coupon;
+        var el = document.createElement("textarea");
+        el.value = value;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand("copy");
+        document.body.removeChild(el);
+        hideDialog();
+        alert("已將" + coupon + "複製至剪貼簿");
+      }
+    }
+
+    //<--購物車 - 自動帶入折扣碼-->
+    function autoAddDiscountCode() {
+      requirejs(["jquery"], function ($) {
+        var $ = jQuery;
+        var coupon = localStorage.getItem("mrl_coupon");
+        console.log("coupon", coupon);
+        localStorage.setItem("mrl_coupon", "");
+        localStorage.removeItem("mrl_coupon");
+
+        var apply_coupon = false;
+        var run_total = 0;
+        var target = document.querySelector("#cart-totals");
+        var coupon_mutationObserver = new MutationObserver(function (
+          mutations
+        ) {
+          mutations.forEach(function (mutation) {
+            if (
+              mutation.type == "childList" &&
+              mutation.target.textContent === "小計"
+            ) {
+              run_total += 1;
+              console.log("run_total", run_total, coupon);
+              if (run_total == 3) {
+                apply_coupon = true;
+                usingCoupon(coupon);
+              }
+            }
+          });
+        });
+
+        // Starts listening for changes in the root HTML element of the page.
+        coupon_mutationObserver.observe(target, {
+          attributes: true,
+          characterData: true,
+          childList: true,
+          subtree: true,
+          //attributeOldValue: true,
+          characterDataOldValue: true,
+        });
+
+        // 如果沒有跑，等3秒再執行一次
+        if (apply_coupon === false) {
+          setTimeout(function () {
+            usingCoupon(coupon);
+          }, 3000);
+        }
+      });
+
+      function usingCoupon(coupon) {
+        //alert(coupon);
+        if (coupon == "" || coupon == null || coupon == "null") return;
+        //alert('近來處理了');
+        $("#block-discount").addClass("active");
+        $("#block-discount .title").attr("aria-selected", "true");
+        $("#block-discount .title").attr("aria-expanded", "true");
+        $("#block-discount .content").css("display", "block");
+        $("#block-discount .content").attr("aria-hidden", "false");
+        $("#coupon_code").val(coupon);
+        $("#coupon_code").trigger("change");
+        $(".amcoupons-apply").trigger("click");
+      }
+    }
+  })();
+</script>

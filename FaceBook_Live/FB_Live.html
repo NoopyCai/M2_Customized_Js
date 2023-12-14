@@ -1,0 +1,171 @@
+<!--Facebook Live-->
+
+<style>
+  /* FB直播提醒 */
+  .fbbrodcast-btn-div {
+    position: fixed;
+    top: 50%;
+    right: 50px;
+    z-index: 200;
+    width: 150px;
+    transform: translateY(-50%);
+  }
+  .fbbrodcast-btn-div.mobile {
+    display: block;
+    /* width: 100px;
+            right: 5px;
+            top: 20%; */
+    width: 60px;
+    top: 70%;
+    right: 2%;
+  }
+
+  @media (max-width: 768px) {
+    /* 直播分類頁優惠顯示 */
+    .product-item
+      .product-item-info
+      .product-item-details
+      .price-box
+      #mrl-final_price
+      .discount-txt {
+      min-height: 1.4rem;
+    }
+    .page-products .products-grid .product-item .product-item-details {
+      height: 210px !important;
+    }
+  }
+  .page-products .products-grid .product-item .product-item-details {
+    height: 182px;
+    position: relative;
+  }
+  .page-products
+    .products-grid
+    .product-item
+    .product-item-details
+    a.product-item-link {
+    display: inline-block;
+    height: 4rem;
+  }
+  .page-products
+    .products-grid
+    .product-item
+    .product-item-details
+    .product-item-inner {
+    position: absolute;
+    bottom: 0;
+  }
+</style>
+
+<!-- <div class="fbbrodcast-btn-div mobile">
+       <div class="top-btn-div" style="width:100px;margin-bottom: 70px;">
+	   <a href="https://fb.watch/65HgaZEc5c/" target="_blank" >
+	   <img style="margin-left:-50px;" src="https://media.mrliving.com.tw/wysiwyg/fb-brodcast_v2.gif" alt="FB直播中">
+	   </a></div>
+</div> -->
+
+<script>
+  (function () {
+    let currentURL = window.location.pathname;
+    if (currentURL.includes("livesale.html")) fbLiveCategory();
+    if (
+      currentURL.includes("www.mrliving.com.tw") &&
+      !currentURL.includes("checkout") &&
+      !currentURL.includes("login") &&
+      !currentURL.includes("create")
+    )
+      fbLiveRimind();
+    // FB直播提醒
+    function fbLiveRimind() {
+      var fbBlockDiv = document.createElement("div");
+      fbBlockDiv.className = "fbbrodcast-btn-div mobile";
+
+      var topBtnDiv = document.createElement("div");
+      topBtnDiv.className = "top-btn-div";
+      topBtnDiv.style.width = "100px";
+      topBtnDiv.style.marginBottom = "70px";
+
+      var anchorElement = document.createElement("a");
+      anchorElement.href = "https://fb.watch/65HgaZEc5c/";
+      anchorElement.target = "_blank";
+
+      var imgElement = document.createElement("img");
+      imgElement.src =
+        "https://media.mrliving.com.tw/wysiwyg/fb-brodcast_v2.gif";
+      imgElement.alt = "FB直播中";
+      imgElement.style.marginLeft = "-50px";
+
+      anchorElement.appendChild(imgElement);
+      topBtnDiv.appendChild(anchorElement);
+      fbBlockDiv.appendChild(topBtnDiv);
+
+      var fbBlock = document.querySelector(".fbbrodcast-btn-div");
+      if (fbLiveLink && showFbliveBtn) {
+        fbBlock.style.display = "block";
+        jQuery(".fbbrodcast-btn-div a").attr("href", fbLiveLink);
+      } else {
+        fbBlock.style.display = "none";
+      }
+    }
+
+    // FB直播分類頁優惠顯示
+    function fbLiveCategory() {
+      var productItem = document.querySelectorAll(
+        ".product-item .product-item-info"
+      );
+      var cssStyle = "font-size: 1.4rem; margin-top: 5px; color: #808080;";
+      var txtChange = [
+        {
+          name: "天絲防蟎減壓高低枕 (高側11／低側9cm)",
+          salevolumeTxt: "銷售數 3,382件",
+        },
+        {
+          name: "涼感減壓記憶枕 (高14cm)｜冰絲表布 專利記憶棉",
+          salevolumeTxt: "銷售數 41,428件",
+        },
+        {
+          name: "雙人標準(5X6.2) | 天絲防蟎減壓記憶薄墊",
+          salevolumeTxt: "銷售數 1,162件",
+        },
+        {
+          name: "天絲抗敏透氣涼感被 藍綠色",
+          salevolumeTxt: "銷售數 891件",
+        },
+        {
+          name: "天絲抗敏透氣涼感被 粉色",
+          salevolumeTxt: "銷售數 358件",
+        },
+        {
+          name: "天絲抗敏透氣涼感被 灰色",
+          salevolumeTxt: "銷售數 826件",
+        },
+        {
+          name: "雙人標準 | 天絲防蟎抗菌保潔墊",
+          salevolumeTxt: "銷售數 2,171件",
+        },
+      ];
+
+      for (var i = 0; i < txtChange.length; i++) {
+        var paragraph = document.createElement("p");
+        paragraph.style.cssText = cssStyle;
+        paragraph.textContent = txtChange[i].salevolumeTxt;
+
+        for (var j = 0; j < productItem.length; j++) {
+          if (
+            productItem[j].querySelector("a.product-item-link").textContent ==
+            txtChange[i].name
+          ) {
+            var productItemSelect = productItem[j];
+          }
+        }
+        productItemSelect
+          .querySelector(
+            ".product-item .product-item-info .product-item-details .product-item-name"
+          )
+          .appendChild(paragraph);
+        productItemSelect.querySelector(
+          ".product-item .product-item-info .product-item-details .product-item-name"
+        ).style = "height:auto;margin-bottom:2rem";
+      }
+    }
+  })();
+</script>

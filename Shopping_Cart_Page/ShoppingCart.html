@@ -1,0 +1,521 @@
+<!--Shopping Cart Page-->
+
+<style>
+  .checkout .item p.fadeOut {
+    animation: fadeOut 1.5s linear 0s;
+  }
+  .checkout .item p.fadeIn {
+    animation: fadeIn 1.5s linear 0s;
+    text-align: start;
+  }
+
+  .goTobuy {
+    display: none;
+    font-size: 15px;
+    width: 100%;
+    text-align: start;
+    margin: 10px 0 0 20px;
+  }
+  .label-title {
+    color: #323232;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-left: 18px;
+  }
+  .notAllow {
+    background-color: #a6a6a6;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 400;
+    padding: 0 6px;
+  }
+  .fadeIn li {
+    text-align: start;
+    font-size: 14px;
+    color: #323232;
+    margin-left: 20px;
+    margin-top: 10px;
+    line-height: 20px;
+    font-weight: 500;
+    width: 65%;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  tr.item-info:has(.notice) > td.qty > div.qty > div.qty > div.qty-changer {
+    visibility: hidden !important;
+    justify-content: start !important;
+  }
+
+  tbody.item:has(.notice) > tr.item-actions > td > div.actions-toolbar {
+    display: none !important;
+  }
+
+  .action-edit {
+    display: none !important;
+  }
+
+  /* 加購區商品文字調整 */
+  .products-crosssell .product.name.product-item-name {
+    height: 50px;
+  }
+  .products-crosssell .price-box.price-final_price {
+    margin: 10px 0 10px;
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 1600px) {
+    .fadeIn li {
+      width: 80%;
+    }
+  }
+  @media (max-width: 768px) {
+    .goTobuy {
+      display: block;
+    }
+
+    .fadeIn li {
+      width: 70%;
+    }
+  }
+</style>
+
+<script>
+  //購物車分期資訊
+  (function () {
+    var cartEmpty = document.querySelector(".cart-empty");
+    if (cartEmpty) {
+      emptyCartText();
+    } else {
+      var item = document.querySelector(
+        ".page-wrapper .page-main .cart-summary .item p"
+      );
+      item.innerHTML =
+        '<strong style="font-size:1.4rem; letter-spacing:1px;">全球物料成本持續上升</br>把握優惠，現在買不買貴</strong>';
+
+      main(); //Running All Functions
+    }
+
+    function main() {
+      const targetElem = waitForElm(".grand.totals .price", 30000);
+
+      targetEle
+        .then((elm) => {
+          checkCartTotal();
+        })
+        .catch((err) => {
+          console.log("Error:", err);
+        });
+    }
+
+    function executeWithCartChange() {
+      updateSubtotal();
+      hideLoading();
+      qtyMaxInput();
+      discountZero();
+      disableGiftQuantityInputs();
+    }
+
+    function executeAfterTotalLoaded() {
+      disableGiftQuantityInputs();
+      qtyInputDisable();
+      reOrderListOfCity();
+      discountZero();
+      poppupLogin();
+    }
+
+    //監聽元素出現
+
+    function waitForElm(selector, timeout = 30000, doc = document) {
+      const scopeDoc = doc;
+      let observer = null;
+      let outRejectFn = null;
+
+      const promise = new Promise((resolve, reject) => {
+        const el = scopeDoc.querySelector(selector);
+        if (el) {
+          return resolve(el);
+        }
+
+        outRejectFn = reject;
+
+        observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            const targetEl = (
+              mutation.target.parentElement ?? scopeDoc
+            )?.querySelector(selector);
+            if (targetEl) {
+              outRejectFn = null;
+              resolve(targetEl);
+              observer?.disconnect();
+              return;
+            }
+          });
+        });
+
+        observer.observe(scopeDoc, {
+          childList: true,
+          subtree: true,
+        });
+
+        setTimeout(() => {
+          outRejectFn = null;
+          reject("超時");
+          observer?.disconnect();
+        }, timeout);
+      });
+
+      return promise;
+    }
+
+    //監聽購物車完全載入&總價變動
+    function checkCartTotal() {
+      let observerSubtotal;
+      let observerLodded;
+      const subtotalElement = document.querySelector(".grand.totals .price");
+      const target = document.querySelector(".cart-totals");
+
+      observerLodded = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (mutation.type === "characterData") {
+            observerLodded.disconnect();
+            executeAfterTotalLoaded();
+          }
+        });
+      });
+
+      observerSubtotal = new MutationObserver(function (mutationsList) {
+        for (let i = 0; i < mutationsList.length; i++) {
+          let mutation = mutationsList[i];
+          if (
+            mutation.type === "childList" ||
+            mutation.type === "characterData"
+          ) {
+            executeWithCartChange();
+          }
+        }
+      });
+
+      observerSubtotal.observe(subtotalElement, {
+        attributes: true,
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
+
+      // Starts listening for changes in the root HTML element of the page.
+      observerLodded.observe(target, {
+        attributes: true,
+        characterData: true,
+        childList: true,
+        subtree: true,
+        //attributeOldValue: true,
+        characterDataOldValue: true,
+      });
+    }
+
+    //訂單總計資訊
+    function updateSubtotal() {
+      const subtotalElement = document.querySelector(".grand.totals .price");
+      const sumPriceElement = document.querySelector(
+        "#cart-totals > div > table > tbody > tr.totals.sub > td > span.price"
+      );
+      const discountElement = document.querySelector(
+        "#cart-totals > div > table > tbody > tr:nth-child(2) > td > span > span.price"
+      );
+
+      const item = document.querySelector(
+        ".page-wrapper .page-main .cart-summary .item p"
+      );
+
+      let subtotal = parsePrice(subtotalElement);
+      let sumPrice = parsePrice(sumPriceElement);
+      let discount = parsePrice(discountElement);
+      sumPrice = sumPrice + discount;
+
+      let message = updateMessage(subtotal, sumPrice);
+
+      item.classList.add("fadeOut");
+      setTimeout(function () {
+        item.innerHTML = message;
+        item.classList.remove("fadeOut");
+        item.classList.add("fadeIn");
+      }, 1500);
+    }
+
+    // <--計算分期資訊-->
+    function updateMessage(subtotal, sumPrice) {
+      if (isNaN(subtotal)) {
+        return "";
+      }
+
+      let message;
+
+      if (subtotal < 10000) {
+        let toThree = 10000 - subtotal;
+        console.log(toThree);
+
+        toThree = getFormatter(toThree);
+
+        message =
+          '<span class="label-title">分期0利率</span>' +
+          '<span class="notAllow" style="margin-left:3%; padding:2px 6px">還差 $' +
+          toThree +
+          "</span>" +
+          '<li style="width:100%">- 滿一萬，可享3期</li>' +
+          '<li style="width:100%">- 滿四萬，可享6期</li>' +
+          '<a class="goTobuy" href="#goToBuyItem" >點我前往加選</a>';
+      } else if (subtotal < 40000) {
+        let aveTree = Math.floor(subtotal / 3);
+        aveTree = getFormatter(aveTree);
+
+        message =
+          '<span class="label-title">分期0利率</span>' +
+          '<li style="width:100%">- 滿一萬，可享3期 (約$' +
+          aveTree +
+          "/期)</li>" +
+          '<li style="width:100%">- 滿四萬，可享6期</li>' +
+          '<a class="goTobuy" href="#goToBuyItem" >點我前往加選</a>';
+      } else {
+        let aveTree = Math.floor(subtotal / 3);
+        aveTree = getFormatter(aveTree);
+        let aveSix = Math.floor(subtotal / 6);
+        aveSix = getFormatter(aveSix);
+
+        message =
+          '<span class="label-title">分期0利率</span>' +
+          '<li style="width:100%">- 滿一萬，可享3期 (約$' +
+          aveTree +
+          "/期)</li>" +
+          '<li style="width:100%">- 滿四萬，可享6期 (約$' +
+          aveSix +
+          "/期)</li>" +
+          '<a class="goTobuy" href="#goToBuyItem" >點我前往加選</a>';
+      }
+
+      //設置前往加選錨點
+      const goToBuyItem = document.querySelector(".crosssell");
+
+      if (goToBuyItem) {
+        goToBuyItem.id = "goToBuyItem";
+      }
+
+      return message;
+    }
+
+    //轉為num
+    function parsePrice(price) {
+      if (price && price.innerText) {
+        return parseFloat(price.innerText.replace(/[$,]/g, ""));
+      } else {
+        return 0;
+      }
+    }
+    //格式化金額
+    function getFormatter(money) {
+      let formatter = new Intl.NumberFormat("en-US");
+      let formattedNumber = formatter.format(money);
+      return formattedNumber;
+    }
+
+    //信用卡圖示
+    function addCreditCardIcon() {
+      const checkOutBtn = document.querySelector(".item .checkout");
+      const creditCardIcon = document.createElement("div");
+
+      creditCardIcon.innerHTML =
+        "<div>" +
+        "<br>" +
+        '<img src="/media/wysiwyg/Creditcard_icon/visa_0.png" alt="Visa" style="width:20%; padding-left:10px; padding-right:10px;">' +
+        '<img src="/media/wysiwyg/Creditcard_icon/mc_0.png" alt="MasterCard" style="width: 20%; padding-left:10px; padding-right:10px;">' +
+        '<img src="/media/wysiwyg/Creditcard_icon/jbc_0.jpg" alt="JCB" style="width: 20%; padding-left:10px; padding-right:10px;">' +
+        "</div>";
+
+      checkOutBtn.parentNode.insertBefore(
+        creditCardIcon,
+        checkOutBtn.nextSibling
+      );
+    }
+
+    //<--禁用贈品修改數量-->
+    function disableGiftQuantityInputs() {
+      const giftInputs = document.querySelectorAll(
+        "tr.item-info:has(.notice) > td.qty > div.qty > div.qty > label > input"
+      );
+
+      giftInputs.forEach(function (inputElement) {
+        inputElement.disabled = true;
+      });
+    }
+
+    //<--隱藏更新購物車loding轉圈-->
+    function hideLoading() {
+      const loadingMask = document.querySelector(".loading-mask");
+      if (loadingMask) {
+        loadingMask.style.display = "block";
+
+        setTimeout(function () {
+          loadingMask.style.display = "none";
+        }, 3000);
+      }
+    }
+
+    //<--限制修改商品數量最大值 20-->
+    function qtyMaxInput() {
+      const qtyInputs = document.querySelectorAll(".item-info .control input");
+      qtyInputs.forEach(function (qtyInput) {
+        qtyInput.addEventListener("input", function () {
+          let inputNumber = parseInt(qtyInput.value, 10);
+
+          if (inputNumber > 20) {
+            qtyInput.value = "20";
+          }
+        });
+      });
+    }
+
+    //<--將無法更改數量的商品顯示為Disabled-->
+    function qtyInputDisable() {
+      const qtyInputContainers = document.querySelectorAll(
+        ".item-info .col .field .control"
+      );
+      const cartItems = document.querySelectorAll(".cart .item-info");
+
+      cartItems.forEach(function (cartItem) {
+        const kitItem = cartItem.querySelector(".mst-cart-item-is-product-kit");
+        const qtyInputContainer = cartItem.querySelector(".control");
+        const qtyArrow = qtyInputContainer.querySelector(".qty-changer ");
+        const qtyInputPar = qtyInputContainer.closest(".field ");
+
+        if (kitItem) {
+          const qtyInput = qtyInputContainer.querySelector("input");
+          qtyInputPar.style.display = "flex";
+          qtyInputPar.style.justifyContent = "center";
+          qtyInputPar.style.marginTop = "10px";
+          qtyInput.disabled = true;
+          qtyArrow.style.display = "none";
+        }
+      });
+    }
+
+    //<--購物車為空時文案-->
+    function emptyCartText() {
+      const item_empty = document.querySelector(
+        ".page-wrapper .page-main .cart-empty p:last-child"
+      );
+      item_empty.innerHTML =
+        '<strong style="font-size:1.4rem; letter-spacing:1px;">全球物料成本持續上升</br><span;">把握優惠，現在買不買貴</span></strong>';
+    }
+  })();
+
+  //<--進入購物車跳出登入-->
+  function poppupLogin() {
+    let url_string = window.location.href;
+    let url = new URL(url_string);
+    let c = url.searchParams.get("showlogin");
+    if (c === "1") {
+      jQuery(".mt_signin").click();
+    }
+  }
+
+  //<--購物車折扣為0則不顯示-->
+  const discountZero = function () {
+    let $ = jQuery;
+    $(".rule-amount").each(function () {
+      if ($(this).html() == "-$0") {
+        $(this).html("");
+        var parent_rule = $(this).closest(".total-rules");
+        parent_rule.remove();
+      }
+    });
+  };
+
+  //<--購物車運費顯示-->
+  const shippingFeeOfCart = function () {
+    // setTimeout(function(){
+    //  var shippingFee = parseInt(document.querySelector('.totals.shipping.incl .price').innerText.replace('$','').replace(',',''));
+    //  if(shippingFee && shippingFee !== 0){
+    //      var doubleShippingFee = shippingFee * 2;
+    //      var promoText = ' $'+ doubleShippingFee + ' - 50%折扣 $'+ shippingFee;
+
+    //      var shippingLabel = document.querySelector('.totals.shipping.incl .label');
+    //      if(!document.querySelector('.totals.shipping.incl .mark .promo')){
+    //          var cartPromotionContent = document.createElement('span');
+    //          cartPromotionContent.classList.add('promo');
+    //          cartPromotionContent.innerText = promoText;
+    //          shippingLabel.after(cartPromotionContent);
+    //      }else{
+    //          document.querySelector('.totals.shipping.incl .mark .promo').innerText = promoText;
+    //      }
+    //  }else if(shippingFee === 0){
+    //    document.querySelector('.totals.shipping.incl .mark .promo').innerText = '';
+    //  }
+    // },3500);
+    const shippingLabel = document.querySelector(
+      ".totals.shipping.incl .label"
+    );
+    const cartPromotionContent = document.createElement("span");
+    cartPromotionContent.classList.add("promo");
+    cartPromotionContent.innerText = "優惠價";
+    shippingLabel.after(cartPromotionContent);
+  };
+
+  //<--縣市列表重新排序-->
+  function reOrderListOfCity() {
+    const options = document.querySelectorAll(
+      'select[name="region_id"] option'
+    );
+    const originRegionId = document.querySelector(
+      'select[name="region_id"]'
+    ).value;
+    let newoptions = Array.apply(null, options);
+
+    let set = new Set();
+    newoptions = newoptions.filter(function (item) {
+      if (!set.has(item.dataset.title) && !set.has(item.innerText)) {
+        set.add(item.innerText);
+        return true;
+      } else {
+        return false;
+      }
+    });
+    newoptions.sort(function (a, b) {
+      if (a.value > b.value) {
+        return 1;
+      } else if (a.value == b.value) {
+        return 0;
+      } else {
+        return -1;
+      }
+    });
+
+    const allSelects = document.querySelectorAll('select[name="region_id"]');
+
+    for (let i = 0; i < allSelects.length; i++) {
+      allSelects[i].innerHTML = "";
+      for (let j = 0; j < newoptions.length; j++) {
+        //console.log(newoptions[j]);
+        allSelects[i].appendChild(newoptions[j].cloneNode(true));
+      }
+      allSelects[i].value = originRegionId;
+    }
+  }
+</script>
