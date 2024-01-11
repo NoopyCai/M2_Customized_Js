@@ -1,3 +1,5 @@
+<!-- Menu bar Product Mobile -->
+
 <style>
   .bottom-nav,
   .bottom-nav-button,
@@ -46,6 +48,7 @@
       position: absolute;
       bottom: -5rem;
       transition: bottom 0.3s ease-in-out, opacity 0.3s ease-in-out;
+      left: 0;
     }
     .add2carActive {
       opacity: 1;
@@ -193,7 +196,7 @@
 
     .wish-icon::before {
       content: "";
-      background-image: url(https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Product/add_to_wishlist.jpg);
+      background-image: url("{{media url=wysiwyg/MenuBar/Product/add_to_wishlist.jpg}}");
       background-position: center;
       background-size: cover;
       position: absolute;
@@ -254,6 +257,11 @@
       transition: ease-in-out 0.2s;
       transform: translateY(0);
     }
+    .bottomNavHidden {
+      visibility: hidden;
+      transition: ease-in-out 0.2s;
+      transform: translateY(100%);
+    }
   }
   @media (max-width: 1024px) {
     #product-info-only {
@@ -279,9 +287,7 @@
     class="bottom-nav-button bottom-nav-add2cart mrl-click mm-pg-add2cart"
     id="menubar-add2cart"
   >
-    <img
-      src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Product/add_to_cart.jpg"
-    /><a
+    <img src="{{media url=wysiwyg/MenuBar/Product/add_to_cart.jpg}}" /><a
       href="javascript:void(1)"
       data-id="1"
       id="tar"
@@ -295,7 +301,7 @@
     data-ga-category="Ecommerce"
   >
     <img
-      src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Product/buy_now.jpg"
+      src="{{media url=wysiwyg/MenuBar/Product/buy_now.jpg}}"
       data-ga-category="Ecommerce"
     />立即購買
   </button>
@@ -489,7 +495,7 @@
     );
 
     //點擊空白處隱藏
-    document.querySelector(".page-wrapper").addEventListener(
+    document.querySelector("#maincontent").addEventListener(
       "click",
       function () {
         hideAdd2carOption();
@@ -597,6 +603,19 @@
     } else {
       console.log("unsupported browser");
     }
+    //點擊漢堡時隱藏底部選單
+    let hamburgerActive = false;
+
+    document.addEventListener("click", function (e) {
+      let bottomNav = document.querySelector(".bottom-nav");
+      if (event.target.classList.contains("ninjamenus-top-triggered")) {
+        event.stopPropagation();
+
+        hamburgerActive = !hamburgerActive;
+        bottomNav.classList.toggle("bottomNavHidden", hamburgerActive);
+        bottomNav.classList.toggle("bottomNavActive", !hamburgerActive);
+      }
+    });
 
     require(["jquery", "Mrl_SocialLogin/js/pslogin-mixin"], function (
       $,
