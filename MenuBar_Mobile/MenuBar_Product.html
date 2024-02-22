@@ -196,7 +196,7 @@
 
     .wish-icon::before {
       content: "";
-      background-image: url("{{media url=wysiwyg/MenuBar/Product/add_to_wishlist.jpg}}");
+      background-image: url("https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Product/add_to_wishlist.jpg");
       background-position: center;
       background-size: cover;
       position: absolute;
@@ -244,8 +244,9 @@
 
     .bottom-nav-img {
       display: inline;
-      height: 5em;
-      margin: 0px;
+      height: 12px;
+      width: 13px;
+      margin-right: 5px;
     }
     .bottomNavHidden {
       visibility: hidden;
@@ -287,7 +288,10 @@
     class="bottom-nav-button bottom-nav-add2cart mrl-click mm-pg-add2cart"
     id="menubar-add2cart"
   >
-    <img src="{{media url=wysiwyg/MenuBar/Product/add_to_cart.jpg}}" /><a
+    <img
+      class="bottom-nav-img"
+      src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Product/add_to_cart.jpg"
+    /><a
       href="javascript:void(1)"
       data-id="1"
       id="tar"
@@ -301,7 +305,8 @@
     data-ga-category="Ecommerce"
   >
     <img
-      src="{{media url=wysiwyg/MenuBar/Product/buy_now.jpg}}"
+      class="bottom-nav-img"
+      src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Product/buy_now.jpg"
       data-ga-category="Ecommerce"
     />立即購買
   </button>
@@ -323,9 +328,18 @@
     var mmBarAddToCartBtn = document.querySelector("#menubar-add2cart");
     var add2carOptionBtn = document.querySelector(".add2carOption-btn");
     var toggle = false;
-    var priceLabel = document.querySelector(".price-label");
+    var priceLabel = document.querySelector("#mrl-final_price");
+    var priceIncrease = document.querySelectorAll(
+      "#product-info-only div.aunav8f.mgz-element.mgz-child.mgz-element-product_attribute > div span > strong"
+    );
+
+    priceIncrease.forEach((el) => {
+      if (el.textContent.includes("漲")) {
+        el.classList.add("tar1");
+      }
+    });
     var mmbar = document.querySelector(".bottom-nav ");
-    priceLabel.classList.add("tar");
+    priceLabel.classList.add("tar2");
 
     const controlMMbar = function () {
       let hamburgerActive = false;
@@ -648,16 +662,28 @@
 
     require(["jquery"], function ($) {
       mmBarAddToCartBtn.addEventListener("click", function () {
-        var target_top = $(".tar").offset().top - 50;
+        var targets = document.querySelectorAll(
+          "#product-info-only div.aunav8f.mgz-element.mgz-child.mgz-element-product_attribute > div span > strong"
+        );
+        var target1_top;
+
+        targets.forEach((target) => {
+          if (target.classList.contains("tar1")) {
+            target1_top = $(".tar1").offset().top - 50;
+          }
+        });
+
+        var target2_top = $(".tar2").offset().top - 50;
         var $body = window.opera
           ? document.compatMode == "CSS1Compat"
             ? $("html")
             : $("body")
           : $("html,body");
-
+        var scrollTopValue =
+          target1_top !== undefined ? target1_top : target2_top;
         $body.animate(
           {
-            scrollTop: target_top,
+            scrollTop: scrollTopValue,
           },
           800
         );
