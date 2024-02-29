@@ -2,7 +2,7 @@
 
 <script>
   (function () {
-    let currentURL = window.location.pathname;
+    let currentURL = window.location.href;
     let pageType = document.querySelector(".ga-page")?.value;
 
     if (
@@ -201,21 +201,21 @@
             usingCoupon(coupon);
           }, 3000);
         }
-      });
 
-      function usingCoupon(coupon) {
-        //alert(coupon);
-        if (coupon == "" || coupon == null || coupon == "null") return;
-        //alert('近來處理了');
-        $("#block-discount").addClass("active");
-        $("#block-discount .title").attr("aria-selected", "true");
-        $("#block-discount .title").attr("aria-expanded", "true");
-        $("#block-discount .content").css("display", "block");
-        $("#block-discount .content").attr("aria-hidden", "false");
-        $("#coupon_code").val(coupon);
-        $("#coupon_code").trigger("change");
-        $(".amcoupons-apply").trigger("click");
-      }
+        function usingCoupon(coupon) {
+          //alert(coupon);
+          if (coupon == "" || coupon == null || coupon == "null") return;
+          //alert('近來處理了');
+          $("#block-discount").addClass("active");
+          $("#block-discount .title").attr("aria-selected", "true");
+          $("#block-discount .title").attr("aria-expanded", "true");
+          $("#block-discount .content").css("display", "block");
+          $("#block-discount .content").attr("aria-hidden", "false");
+          $("#coupon_code").val(coupon);
+          $("#coupon_code").trigger("change");
+          $(".amcoupons-apply").trigger("click");
+        }
+      });
     }
   })();
 </script>
