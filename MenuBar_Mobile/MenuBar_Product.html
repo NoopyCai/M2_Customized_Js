@@ -29,6 +29,17 @@
         0 -1px 5px 0 rgba(0, 0, 0, 0.26);
       z-index: 3147483646;
       margin-bottom: 0px;
+      padding-bottom: 20px;
+    }
+    .bottom-nav::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 76px;
+      background-color: #fff;
+      z-index: -1;
     }
     .notActive {
       display: none;
@@ -155,21 +166,28 @@
     .bottom-nav-buynow {
       flex-basis: 107.5px;
     }
+    .menubar-buynow {
+      color: #b2b2b2;
+    }
     .cart-icon::before {
-      font-size: 20px;
-      color: #a9a9a9;
-      content: "\e611";
-      font-family: "luma-icons";
-      font-weight: 200;
-      line-height: 21px;
-      overflow: hidden;
-      vertical-align: top;
+      content: "";
+      background-image: url("https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_cart.png");
+      background-position: center;
+      background-size: cover;
+      position: absolute;
+      top: 33%;
+      left: 50%;
+      width: 24px;
+      height: 23px;
+      transform: translate(-50%, -50%);
+      z-index: 2;
     }
     .cart-icon::after {
       content: attr(data-after);
-      background: #ff5501;
+      background: #c34135;
       color: #fff;
       height: 22px;
+      width: 14px;
       line-height: 22px;
       border-radius: 2px;
       display: inline-block;
@@ -179,8 +197,13 @@
       text-align: center;
       white-space: nowrap;
       margin: 0px 0 0 5px;
-      font-size: 14px;
+      position: absolute;
+      font-size: 11px;
+      border-radius: 100%;
+      top: 1px;
+      right: 18px px;
     }
+
     .cart-icon.noitem::after {
       display: none;
     }
@@ -196,7 +219,7 @@
 
     .wish-icon::before {
       content: "";
-      background-image: url("https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Product/add_to_wishlist.jpg");
+      background-image: url("https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_heart.png");
       background-position: center;
       background-size: cover;
       position: absolute;
@@ -207,6 +230,11 @@
       transform: translate(-50%, -50%);
       z-index: 2;
     }
+
+    .wishActive.wish-icon::before {
+      background-image: url("https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_heart_Active.png") !important;
+    }
+
     .wish-icon {
       height: 22px;
     }
@@ -214,15 +242,15 @@
     .bottom-nav-add2cart:active,
     .bottom-nav-add2cart:hover,
     .bottom-nav-add2cart:focus {
-      background-color: #1865ff;
+      background-color: #c34135;
       color: #fff;
     }
     .bottom-nav-buynow,
     .bottom-nav-buynow:active,
     .bottom-nav-buynow:hover,
     .bottom-nav-buynow:focus {
-      background-color: #c34135;
-      color: #fff;
+      background-color: #fff;
+      color: #c34135;
     }
 
     .bottom-nav-cart,
@@ -230,18 +258,17 @@
       flex-basis: 80px;
       background-color: #fff;
     }
-    .bottom-nav-button {
-      color: #fff;
-    }
     .bottom-nav-cart,
     .bottom-nav-cart a,
     .bottom-nav-wishlist,
     .bottom-nav-wishlist span {
-      color: #a9a9a9;
+      color: #b2b2b2;
       font-size: 12.5px;
       text-decoration: none;
     }
-
+    .bottom-nav-button {
+      border: none;
+    }
     .bottom-nav-img {
       display: inline;
       height: 12px;
@@ -262,6 +289,11 @@
       visibility: hidden;
       transition: ease-in-out 0.2s;
       transform: translateY(100%);
+    }
+    .bottom-nav > #menubar-add2wishlist {
+      background-color: #fff;
+      color: #b2b2b2;
+      border: none;
     }
   }
   @media (max-width: 1024px) {
@@ -288,10 +320,7 @@
     class="bottom-nav-button bottom-nav-add2cart mrl-click mm-pg-add2cart"
     id="menubar-add2cart"
   >
-    <img
-      class="bottom-nav-img"
-      src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Product/add_to_cart.jpg"
-    /><a
+    <a
       href="javascript:void(1)"
       data-id="1"
       id="tar"
@@ -304,11 +333,7 @@
     id="menubar-buynow"
     data-ga-category="Ecommerce"
   >
-    <img
-      class="bottom-nav-img"
-      src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Product/buy_now.jpg"
-      data-ga-category="Ecommerce"
-    />立即購買
+    立即購買
   </button>
 </div>
 
@@ -486,8 +511,14 @@
       function (e) {
         if (isLogin()) {
           clickOriginAddtoWishList();
+          mmBarAddToWishListBtn
+            .querySelector(".wish-icon")
+            .classList.add("wishActive");
         } else {
           clickLogin();
+          mmBarAddToWishListBtn
+            .querySelector(".wish-icon")
+            .classList.add("wishActive");
         }
       },
       false
