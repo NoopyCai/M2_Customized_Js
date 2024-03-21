@@ -31,6 +31,9 @@
       margin-bottom: 0px;
       padding-bottom: 20px;
     }
+    .scrollUp {
+      padding-bottom: 0;
+    }
     .bottom-nav::before {
       content: "";
       position: absolute;
@@ -60,6 +63,7 @@
       bottom: -5rem;
       transition: bottom 0.3s ease-in-out, opacity 0.3s ease-in-out;
       left: 0;
+      padding-bottom: 20px;
     }
     .add2carActive {
       opacity: 1;
@@ -186,12 +190,11 @@
       content: attr(data-after);
       background: #c34135;
       color: #fff;
-      height: 22px;
-      width: 14px;
-      line-height: 22px;
+      height: 20px;
+      line-height: 20px;
       border-radius: 2px;
       display: inline-block;
-      min-width: 19px;
+      min-width: 17px;
       overflow: hidden;
       padding: 0px 1px;
       text-align: center;
@@ -201,7 +204,8 @@
       font-size: 11px;
       border-radius: 100%;
       top: 1px;
-      right: 18px px;
+      right: 18px;
+      z-index: 2;
     }
 
     .cart-icon.noitem::after {
@@ -382,11 +386,15 @@
     };
 
     function mmbarBtnClickFeedback(element, changeTxt) {
-      if (changeTxt != undefined) element.childNodes[1].textContent = changeTxt;
+      if (element && element.childNodes[1]) {
+        element.childNodes[1].textContent = changeTxt;
+      }
       element.disabled = true;
     }
     function mmbarShowOriginAddBtn(element, changeTxt) {
-      if (changeTxt != undefined) element.childNodes[1].textContent = changeTxt;
+      if (element && element.childNodes[1]) {
+        element.childNodes[1].textContent = changeTxt;
+      }
       element.disabled = false;
     }
 
@@ -661,6 +669,22 @@
         bottomNav.classList.toggle("bottomNavActive", !hamburgerActive);
       }
     });
+
+    var lastScrollTop = 0;
+    window.addEventListener(
+      "scroll",
+      function () {
+        var currentScroll =
+          window.pageYOffset || document.documentElement.scrollTop;
+        if (currentScroll > lastScrollTop) {
+          document.querySelector(".bottom-nav").classList.remove("scrollUp");
+        } else {
+          document.querySelector(".bottom-nav").classList.add("scrollUp");
+        }
+        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+      },
+      false
+    );
 
     require(["jquery", "Mrl_SocialLogin/js/pslogin-mixin"], function (
       $,
