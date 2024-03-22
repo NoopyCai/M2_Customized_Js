@@ -1,3 +1,5 @@
+<!-- Menu bar Mobile -->
+
 <style>
   .bottom-nav-original,
   .bottom-nav-button,
@@ -36,9 +38,10 @@
       right: 0;
       box-shadow: 0 -2px 10px 0 rgba(0, 0, 0, 0.16),
         0 -1px 5px 0 rgba(0, 0, 0, 0.26);
-      z-index: 3147483646;
-      background-color: #000 !important;
+      z-index: 9999;
+      background-color: #fff !important;
       margin-bottom: 0px;
+      padding-bottom: 20px;
     }
 
     .bottom-nav-button {
@@ -51,7 +54,7 @@
       line-height: 34px;
       height: 36px;
       transition: all 0.15s ease-in-out;
-      background-color: #030706 !important;
+      background-color: #fff !important;
       color: #1d1d1d;
       cursor: pointer;
       outline: 0;
@@ -88,12 +91,63 @@
       top: 65%;
       left: 50%;
       transform: translateX(-50%);
-      color: #fff;
+      color: #b2b2b2;
+      font-size: 12px;
     }
   }
 </style>
 
 <div class="bottom-nav bottom-nav-original">
+  <button class="bottom-nav-button mrl-click">
+    <span class="icon"
+      ><a href="https://www.mrliving.com.tw/">
+        <span id="iconPicture">
+          <img
+            id="homepageImg"
+            style="width: 20px; height: 20px"
+            class="bottom-nav-img"
+            data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_home.png"
+            alt="首頁"
+          />
+        </span>
+        <p id="homepageText" class="bottom-text">首頁</p></a
+      >
+    </span>
+  </button>
+
+  <button class="bottom-nav-button mrl-click">
+    <span class="icon"
+      ><a href="javascript:;" id="bottom-nav-hamburger">
+        <span id="iconPicture">
+          <img
+            id="hamburgerImg"
+            style="width: 19px; height: 15px"
+            class="bottom-nav-img"
+            data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_bars_hamburger.png"
+            alt="主選單"
+          />
+        </span>
+        <p id="hambugerText" class="bottom-text">主選單</p></a
+      >
+    </span>
+  </button>
+  <button class="bottom-nav-button bottom-nav-store mrl-click mm-reserv">
+    <span class="icon"
+      ><a href="{{store direct_url='store-locations'}}">
+        <span id="iconPicture">
+          <img
+            id="storeImg"
+            style="width: 18px; height: 21px"
+            class="bottom-nav-img"
+            data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_store.png"
+            alt="門市查詢"
+          />
+        </span>
+        <p id="storeText" class="bottom-text">門市查詢</p></a
+      >
+    </span>
+  </button>
+
   <button
     class="bottom-nav-button bottom-nav-search mrl-click mm-srch"
     id="bottom-nav-search"
@@ -102,56 +156,31 @@
       ><a href="javascript:;">
         <span id="iconPicture">
           <img
+            id="spaceImg"
+            style="width: 23px; height: 24px"
             class="bottom-nav-img"
-            data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom_0829/MenuBar_icon_Search_.png"
-            alt="搜尋商品"
+            data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_space.png"
+            alt="空間指南"
           />
         </span>
-        <p class="bottom-text">搜尋商品</p></a
+        <p id="spaceText" class="bottom-text">空間指南</p></a
       >
     </span>
   </button>
 
-  <button class="bottom-nav-button bottom-nav-store mrl-click mm-reserv">
-    <span class="icon"
-      ><a href="https://www.mrliving.com.tw/store-locations">
-        <span id="iconPicture">
-          <img
-            class="bottom-nav-img"
-            data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom_0829/MenuBar_icon_Shop_.png"
-            alt="門市查詢"
-          />
-        </span>
-        <p class="bottom-text">門市查詢</p></a
-      >
-    </span>
-  </button>
   <button class="bottom-nav-button bottom-nav-cart mrl-click mm-cart">
     <span class="icon"
-      ><a href="https://www.mrliving.com.tw/checkout/cart/">
+      ><a href="{{store direct_url='checkout/cart/'}}" target="_blank">
         <span id="iconPicture">
           <img
+            id="cartImg"
+            style="width: 24px; height: 22px"
             class="bottom-nav-img"
-            data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom_0829/MenuBar_icon_Cart_.png"
+            data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_cart.png"
             alt="購物車"
           />
         </span>
-        <p class="bottom-text">購物車</p></a
-      >
-    </span>
-  </button>
-
-  <button class="bottom-nav-button bottom-nav-line mrl-click mm-line">
-    <span class="icon"
-      ><a href="https://maac.io/1snyc" target="_blank">
-        <span id="iconPicture">
-          <img
-            class="bottom-nav-img"
-            data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom_0829/MenuBar_icon_LINE_.png"
-            alt="加入Line"
-          />
-        </span>
-        <p class="bottom-text">加入Line</p></a
+        <p id="cartText" class="bottom-text">購物車</p></a
       >
     </span>
   </button>
@@ -345,6 +374,10 @@
     font-size: 20px;
   }
 
+  .nav-toggle:before {
+    display: none !important;
+  }
+
   @media (max-width: 320px) {
     #search_popup_01 {
       width: 280px;
@@ -500,6 +533,7 @@
                 class="bottom-nav-img recomd-img"
                 data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Hotsale_mobile_7piece_7.jpg"
                 alt="床墊寢具單件免運"
+                loading="lazy"
             /></a>
           </li>
           <li class="content-store-li">
@@ -508,6 +542,7 @@
                 class="bottom-nav-img recomd-img"
                 data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/file.jpg"
                 alt="北歐復古實木家具"
+                loading="lazy"
             /></a>
           </li>
           <li class="content-store-li">
@@ -517,6 +552,7 @@
                 class="bottom-nav-img recomd-img"
                 data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/file_2.jpg"
                 alt="防水貓抓布"
+                loading="lazy"
             /></a>
           </li>
           <li class="content-store-li">
@@ -525,6 +561,7 @@
                 class="bottom-nav-img recomd-img"
                 data-src="https://www.mrliving.com.tw/media/wysiwyg/MenuBar/file_1.jpg"
                 alt="全牛皮沙發"
+                loading="lazy"
             /></a>
           </li>
         </ul>
@@ -549,6 +586,15 @@
     const hideBottomNav = limitedPages.some((keyword) =>
       currentURL.endsWith(keyword)
     );
+
+    checkIconDisplay();
+
+    document
+      .getElementById("bottom-nav-hamburger")
+      .addEventListener("click", function () {
+        document.querySelector(".nav-toggle").click();
+      });
+
     const parentBlock = document
       .querySelector(".bottom-nav-original")
       .closest(".block-static-block");
@@ -605,7 +651,38 @@
         $.fancybox.open({
           src: rowpopup,
           type: "inline",
+          beforeClose: function () {
+            document.getElementById("spaceImg").src =
+              "https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_space.png";
+            document.getElementById("spaceText").style.color = "#b2b2b2";
+            checkIconDisplay();
+            if (currentURL === "http://dev-release-m2v243.mrliving.tw/") {
+              document.getElementById("homepageImg").src =
+                "https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_home_Active.png";
+              document.getElementById("homepageText").style.color = "#000";
+            } else if (currentURL.includes("/store-locations")) {
+              document.getElementById("storeImg").src =
+                "https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_store_active.png";
+              document.getElementById("storeText").style.color = "#000";
+            } else if (currentURL.includes("/cart")) {
+              document.getElementById("cartImg").src =
+                "https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_cart_Active.png";
+              document.getElementById("cartText").style.color = "#000";
+            }
+          },
         });
+        document.getElementById("homepageImg").src =
+          "https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_home.png";
+        document.getElementById("homepageText").style.color = "#b2b2b2";
+        document.getElementById("storeImg").src =
+          "https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_store.png";
+        document.getElementById("storeText").style.color = "#b2b2b2";
+        document.getElementById("cartImg").src =
+          "https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_cart.png";
+        document.getElementById("cartText").style.color = "#b2b2b2";
+        document.getElementById("spaceImg").src =
+          "https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_space_Active.png";
+        document.getElementById("spaceText").style.color = "#000";
       }
     });
     // ]]>
@@ -623,9 +700,37 @@
       minisearchForm.reset();
     }
 
+    //判斷頁面顯示特定icon
+    function checkIconDisplay() {
+      if (currentURL === "http://dev-release-m2v243.mrliving.tw/") {
+        document
+          .getElementById("homepageImg")
+          .setAttribute(
+            "data-src",
+            "https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_home_Active.png"
+          );
+        document.getElementById("homepageText").style.color = "#000";
+      } else if (currentURL.includes("/store-locations")) {
+        document
+          .getElementById("storeImg")
+          .setAttribute(
+            "data-src",
+            "https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_store_active.png"
+          );
+        document.getElementById("storeText").style.color = "#000";
+      } else if (currentURL.includes("/cart")) {
+        document
+          .getElementById("cartImg")
+          .setAttribute(
+            "data-src",
+            "https://www.mrliving.com.tw/media/wysiwyg/MenuBar/Buttom/mmbar_cart_Active.png"
+          );
+        document.getElementById("cartText").style.color = "#000";
+      }
+    }
+
     //點擊漢堡時隱藏底部選單
     let hamburgerActive = false;
-
     document.addEventListener("click", function (e) {
       let bottomNav = document.querySelector(".bottom-nav");
       if (event.target.classList.contains("ninjamenus-top-triggered")) {
@@ -636,5 +741,26 @@
         bottomNav.classList.toggle("bottomNavActive", !hamburgerActive);
       }
     });
+
+    var lastScrollTop = 0;
+
+    window.addEventListener(
+      "scroll",
+      function () {
+        var currentScroll =
+          window.pageYOffset || document.documentElement.scrollTop;
+        if (currentScroll > lastScrollTop) {
+          document
+            .querySelector(".bottom-nav-original")
+            .classList.remove("scrollUp");
+        } else {
+          document
+            .querySelector(".bottom-nav-original")
+            .classList.add("scrollUp");
+        }
+        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll; // For Mobile or negative scrolling
+      },
+      false
+    );
   })();
 </script>
