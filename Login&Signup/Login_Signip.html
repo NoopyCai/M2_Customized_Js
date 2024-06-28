@@ -18,30 +18,58 @@
     background-color: #386bd6;
     transition: linear 0.2s;
   }
+
+  .mobile_login_popup .right-contet-part .tit-item span {
+    border-bottom: 3px solid #c34135;
+  }
+
+  .mobile_login_popup .right-contet-part .tit-item span.active {
+    order: 2px solid #c34135;
+    border-bottom: none;
+  }
 </style>
 
 <script>
   (function () {
-    document.addEventListener("click", function (event) {
-      if (
-        event.target.classList.contains("mt_create_account") ||
-        event.target.classList.contains("mt_signin")
-      ) {
-        cleanLoginInfo();
-        autoEmailInput();
-      }
-    });
+    var loginBtn = document.querySelector(
+      ".mobile_login_popup .right-contet-part .tit-item .login-email-title"
+    );
+    var registerBtn = document.querySelector(
+      ".mobile_login_popup .right-contet-part .tit-item .create-acc-title"
+    );
 
-    //<--Clean login popup show info-->
-    function cleanLoginInfo() {
-      dataLayer.push({
-        lastClickText: null,
-        lastClickElement: null,
-      });
+    loginBtn.addEventListener("click", function () {
+      tabActiveCheck();
+    });
+    registerBtn.addEventListener("click", function () {
+      tabActiveCheck();
+    });
+    function tabActiveCheck() {
+      if (loginBtn.classList.contains("active")) {
+        loginBtn.classList.add("left");
+        registerBtn.classList.remove("right");
+      } else if (registerBtn.classList.contains("active")) {
+        loginBtn.classList.remove("left");
+        registerBtn.classList.add("right");
+      }
+    }
+    // document.addEventListener("click", function (event) {
+    //   if (
+    //     event.target.classList.contains("mt_create_account") ||
+    //     event.target.classList.contains("mt_signin")
+    //   ) {
+    //     autoEmailInput();
+    //   }
+    // });
+    document.addEventListener("DOMContentLoaded", function () {});
+    const LoginAndregister = document.querySelector("#modal-content-1");
+    console.log(LoginAndregister, "emailInputElment");
+    if (LoginAndregister) {
+      emailInputOption();
     }
 
     //<--註冊會員填寫email提供網域選擇-->
-    function autoEmailInput() {
+    function emailInputOption() {
       let emailInput;
       // var currentUrl = window.location.href;
       // console.log(currentUrl);
